@@ -5,14 +5,15 @@ function saveApiKey() {
   const status = document.getElementById("apiStatus");
 
   // ✅ Validasi API key Groq
-  if (apiKey.startsWith("sk_groq_")) {
-    status.innerHTML = "✅ Groq API key siap digunakan";
+  if (apiKey.startsWith("gsk_") && apiKey.length > 20) {
+    status.innerHTML = "✅ API key Groq siap digunakan";
     status.style.color = "green";
   } else {
     status.innerHTML = "❌ API key Groq tidak valid";
     status.style.color = "red";
   }
 }
+
 
 async function generateKeywords() {
   const title = document.getElementById("titleInput").value.trim();
