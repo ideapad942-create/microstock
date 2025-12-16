@@ -53,26 +53,32 @@ Title: ${title}
 `;
 
   try {
-    const res = await fetch(
-      "https://api.groq.com/openai/v1/chat/completions",
-      {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          "Authorization": "Bearer " + apiKey
-        },
-        body: JSON.stringify({
-          model: "llama3-70b-8192",
-          messages: [{ role: "user", content: prompt }],
-          temperature: 0.7
-        })
+   const res = await fetch(
+  "https://api.groq.com/openai/v1/chat/completions",
+  {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+      "Authorization": "Bearer " + apiKey
+    },
+    body: JSON.stringify({
+      model: "llama3-70b-8192",
+      messages: [
+        { role: "user", content: prompt }
+      ],
+      temperature: 0.7
+    })
+  }
+);
+
       }
     );
 
     const data = await res.json();
     console.log("Full response:", data);
+  
+const raw = data?.choices?.[0]?.message?.content;
 
-    const raw = data?.choices?.[0]?.message?.content;
 
     if (!raw || raw.length < 10) throw new Error("Respons kosong atau sangat pendek.");
 
