@@ -29,8 +29,13 @@ async function generateKeywords() {
   status.innerHTML = "⏳ Menghubungi Groq AI...";
 
   const prompt = `
-You are an Adobe Stock metadata assistant.
-Generate exactly 45 one-word English keywords, lowercase, comma separated.
+You are an Adobe Stock metadata assistant. Generate 45 one-word English keywords based on this title.
+
+Rules:
+- lowercase
+- one word
+- no numbers or symbols
+- comma separated only
 
 Title: ${title}
 `;
@@ -46,24 +51,17 @@ Title: ${title}
         },
         body: JSON.stringify({
           model: "llama3-70b-8192",
-          messages: [
-            { role: "user", content: prompt }
-          ],
+          messages: [{ role: "user", content: prompt }],
           temperature: 0.7
         })
       }
     );
 
-    if (!res.ok) {
-      const errText = await res.text();
-      throw new Error(errText);
-    }
-
     const data = await res.json();
     console.log("Groq response:", data);
 
     const raw = data?.choices?.[0]?.message?.content;
-    if (!raw) throw new Error("Respons kosong");
+    if (!raw) throw new Error("Empty response");
 
     let keywords = raw
       .replace(/[\n\r]/g, ",")
@@ -73,16 +71,12 @@ Title: ${title}
 
     keywords = [...new Set(keywords)].slice(0, 45);
 
-    if (keywords.length < 10) {
-      throw new Error("Keyword terlalu sedikit");
-    }
-
     output.value = keywords.join(", ");
     status.innerHTML = "✅ Keyword berhasil dibuat";
     status.style.color = "green";
 
   } catch (err) {
-    console.error("❌ ERROR:", err);
+    console.error("Groq ERROR:", err);
     status.innerHTML = "⚠️ Gagal menghasilkan keyword. Periksa console (F12).";
     status.style.color = "red";
   }
@@ -94,5 +88,6 @@ function copyKeywords() {
   document.execCommand("copy");
   alert("✅ Keyword berhasil dicopy!");
 }
+
 
 
