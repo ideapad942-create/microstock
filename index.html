@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Microstock Keyword Generator (Groq)</title>
+    <title>Microstock Video Keyword Tool</title>
     <style>
         :root {
             --primary: #2563eb;
@@ -11,6 +11,8 @@
             --card: #ffffff;
             --text: #1e293b;
             --border: #e2e8f0;
+            --success: #16a34a;
+            --error: #dc2626;
         }
 
         body {
@@ -26,7 +28,7 @@
 
         .container {
             width: 100%;
-            max-width: 600px;
+            max-width: 900px; /* Diperlebar untuk tabel */
             background: var(--card);
             padding: 30px;
             border-radius: 12px;
@@ -35,10 +37,8 @@
 
         h2 {
             margin-top: 0;
-            font-size: 1.5rem;
-            color: var(--text);
-            margin-bottom: 20px;
             text-align: center;
+            margin-bottom: 20px;
         }
 
         .form-group {
@@ -49,10 +49,8 @@
             display: block;
             font-weight: 600;
             margin-bottom: 8px;
-            font-size: 0.9rem;
         }
 
-        input[type="text"],
         input[type="password"],
         textarea {
             width: 100%;
@@ -60,7 +58,7 @@
             border: 1px solid var(--border);
             border-radius: 8px;
             font-size: 1rem;
-            box-sizing: border-box; /* Agar padding tidak melebarkan elemen */
+            box-sizing: border-box;
             font-family: inherit;
         }
 
@@ -70,22 +68,7 @@
             box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.1);
         }
 
-        .helper-text {
-            font-size: 0.85rem;
-            color: #64748b;
-            margin-top: 6px;
-        }
-
-        .helper-text a {
-            color: var(--primary);
-            text-decoration: none;
-        }
-
-        .helper-text a:hover {
-            text-decoration: underline;
-        }
-
-        button {
+        button.main-btn {
             width: 100%;
             padding: 12px;
             background-color: var(--primary);
@@ -95,86 +78,112 @@
             font-size: 1rem;
             font-weight: 600;
             cursor: pointer;
-            transition: background 0.2s;
         }
 
-        button:hover {
-            background-color: #1d4ed8;
-        }
+        button.main-btn:hover { background-color: #1d4ed8; }
+        button.main-btn:disabled { background-color: #94a3b8; cursor: wait; }
 
-        button:disabled {
-            background-color: #94a3b8;
-            cursor: not-allowed;
-        }
-
-        .output-section {
+        /* TABLE STYLES */
+        .result-table {
+            width: 100%;
+            border-collapse: collapse;
             margin-top: 30px;
-            padding-top: 20px;
-            border-top: 1px dashed var(--border);
+            font-size: 0.95rem;
+        }
+
+        .result-table th, .result-table td {
+            border: 1px solid var(--border);
+            padding: 12px;
+            vertical-align: top;
+        }
+
+        .result-table th {
+            background-color: #f1f5f9;
+            text-align: left;
+        }
+
+        .col-title { width: 20%; font-weight: bold; }
+        .col-keywords { width: 65%; }
+        .col-action { width: 15%; text-align: center; }
+
+        textarea.keyword-result {
+            width: 100%;
+            height: 100px;
+            resize: vertical;
+            border: 1px solid #cbd5e1;
+            font-size: 0.9rem;
+            padding: 8px;
         }
 
         .copy-btn {
-            background-color: #10b981;
-            margin-top: 10px;
+            background-color: var(--success);
+            color: white;
+            border: none;
+            padding: 8px 12px;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 0.85rem;
+            margin-top: 5px;
         }
-        .copy-btn:hover {
-            background-color: #059669;
-        }
+        .copy-btn:hover { background-color: #15803d; }
 
+        .status-badge {
+            display: inline-block;
+            padding: 4px 8px;
+            border-radius: 4px;
+            font-size: 0.8rem;
+            font-weight: bold;
+        }
+        .status-wait { background-color: #e2e8f0; color: #475569; }
+        .status-loading { background-color: #bfdbfe; color: #1e40af; }
+        .status-done { background-color: #dcfce7; color: #166534; }
+        .status-error { background-color: #fee2e2; color: #991b1b; }
+
+        .helper-text { font-size: 0.85rem; color: #64748b; margin-top: 5px; }
+        .helper-text a { color: var(--primary); text-decoration: none; }
+        
         .footer {
             margin-top: 40px;
             text-align: center;
             font-size: 0.8rem;
             color: #94a3b8;
-        }
-
-        /* Loading Spinner */
-        .spinner {
-            display: none;
-            width: 20px;
-            height: 20px;
-            border: 3px solid #ffffff;
-            border-radius: 50%;
-            border-top-color: transparent;
-            animation: spin 1s linear infinite;
-            margin: 0 auto;
-        }
-
-        @keyframes spin {
-            to { transform: rotate(360deg); }
+            border-top: 1px dashed var(--border);
+            padding-top: 10px;
         }
     </style>
 </head>
 <body>
 
 <div class="container">
-    <h2>Microstock Keyword Generator</h2>
+    <h2>Microstock Video Keyword Generator</h2>
 
     <div class="form-group">
-        <label for="apiKey">Groq API Key</label>
+        <label>Groq API Key</label>
         <input type="password" id="apiKey" placeholder="Masukkan gsk_...">
         <div class="helper-text">
-            Belum punya API Key? Generate disini: <a href="https://console.groq.com/keys" target="_blank">https://console.groq.com/keys</a>
+            Belum punya API Key? <a href="https://console.groq.com/keys" target="_blank">Generate disini</a>
         </div>
     </div>
 
     <div class="form-group">
-        <label for="titleInput">Judul Aset (Title)</label>
-        <input type="text" id="titleInput" placeholder="Contoh: film burn, light leak, transitions...">
-        <div class="helper-text">Masukkan judul aset Anda, pisahkan dengan koma jika ada variasi.</div>
+        <label>List Judul Video (Pisahkan dengan Enter/Baris Baru)</label>
+        <textarea id="titleInput" rows="6" placeholder="Film burn overlay&#10;Lens flare transition&#10;Cinematic bokeh background"></textarea>
+        <div class="helper-text">Satu baris = satu judul video.</div>
     </div>
 
-    <button id="generateBtn" onclick="generateKeywords()">
-        <span id="btnText">Generate Keywords</span>
-        <div class="spinner" id="btnSpinner"></div>
-    </button>
+    <button class="main-btn" id="generateBtn" onclick="startGeneration()">Generate Keywords</button>
 
-    <div class="output-section">
-        <label for="outputKeywords">Output Keywords (40-45 Kata)</label>
-        <textarea id="outputKeywords" rows="8" placeholder="Hasil keyword akan muncul di sini..."></textarea>
-        <div class="helper-text" id="countInfo">Jumlah kata: 0</div>
-        <button class="copy-btn" onclick="copyToClipboard()">Salin Keywords</button>
-    </div>
+    <table class="result-table" id="resultTable" style="display:none;">
+        <thead>
+            <tr>
+                <th class="col-title">Judul Video</th>
+                <th class="col-keywords">Generated Keywords</th>
+                <th class="col-action">Aksi</th>
+            </tr>
+        </thead>
+        <tbody id="tableBody">
+            </tbody>
+    </table>
 
     <div class="footer">
         Licence : @bangjeeyy
@@ -182,49 +191,81 @@
 </div>
 
 <script>
-    async function generateKeywords() {
+    async function startGeneration() {
         const apiKey = document.getElementById('apiKey').value.trim();
-        const title = document.getElementById('titleInput').value.trim();
-        const outputArea = document.getElementById('outputKeywords');
-        const btnText = document.getElementById('btnText');
-        const btnSpinner = document.getElementById('btnSpinner');
+        const rawTitles = document.getElementById('titleInput').value.trim();
+        
+        if (!apiKey) { alert("Harap masukkan API Key!"); return; }
+        if (!rawTitles) { alert("Harap masukkan minimal satu judul!"); return; }
+
+        // Pisahkan judul berdasarkan baris baru (Enter) dan hapus baris kosong
+        const titles = rawTitles.split('\n').filter(t => t.trim() !== '');
+
+        // Tampilkan tabel, sembunyikan baris lama
+        const table = document.getElementById('resultTable');
+        const tbody = document.getElementById('tableBody');
+        table.style.display = 'table';
+        tbody.innerHTML = ''; // Reset tabel
+
+        // Buat baris kosong dulu (Status: Waiting)
+        titles.forEach((title, index) => {
+            const row = document.createElement('tr');
+            row.id = `row-${index}`;
+            row.innerHTML = `
+                <td>
+                    <strong>${title}</strong><br>
+                    <span class="status-badge status-wait" id="status-${index}">Menunggu...</span>
+                </td>
+                <td>
+                    <textarea id="out-${index}" class="keyword-result" readonly></textarea>
+                </td>
+                <td>
+                    <button class="copy-btn" onclick="copyRow('${index}')" disabled id="btn-${index}">Copy</button>
+                </td>
+            `;
+            tbody.appendChild(row);
+        });
+
         const generateBtn = document.getElementById('generateBtn');
-        const countInfo = document.getElementById('countInfo');
-
-        // Validasi Input
-        if (!apiKey) {
-            alert("Harap masukkan API Key Groq Anda!");
-            return;
-        }
-        if (!title) {
-            alert("Harap masukkan Judul!");
-            return;
-        }
-
-        // UI Loading State
         generateBtn.disabled = true;
-        btnText.style.display = 'none';
-        btnSpinner.style.display = 'block';
-        outputArea.value = "Sedang memproses...";
+        generateBtn.innerText = "Sedang Memproses...";
 
-        // System Prompt yang Diperketat Sesuai Request
+        // PROSES LOOPING SATU PER SATU (Untuk menghindari error API rate limit)
+        for (let i = 0; i < titles.length; i++) {
+            await processSingleTitle(apiKey, titles[i], i);
+        }
+
+        generateBtn.disabled = false;
+        generateBtn.innerText = "Generate Keywords";
+    }
+
+    async function processSingleTitle(apiKey, title, index) {
+        const statusEl = document.getElementById(`status-${index}`);
+        const outputEl = document.getElementById(`out-${index}`);
+        const btnEl = document.getElementById(`btn-${index}`);
+
+        statusEl.className = 'status-badge status-loading';
+        statusEl.innerText = "Memproses...";
+
+        // SYSTEM PROMPT KHUSUS VIDEO
         const systemPrompt = `
-            You are an expert microstock metadata assistant. Your task is to generate keywords based on a user-provided title.
+            You are a Microstock Metadata Expert for VIDEO FOOTAGE.
             
-            STRICT RULES:
-            1.  **Source Priority**: Start with the words found in the title itself.
-            2.  **Relevance**: After title words, add relevant synonyms and conceptual keywords suitable for microstock agencies (Shutterstock, Adobe Stock, etc.).
-            3.  **Quantity**: The total output MUST be between 40 and 45 keywords. Not less than 40, not more than 45.
-            4.  **Phrasing (CRITICAL)**: 
-                - 90% of the keywords MUST be SINGLE words (e.g., "film", "burn" instead of "film burn").
-                - Maximum 10% can be 2-word phrases.
-                - absolutely NO 3-word phrases.
-            5.  **Formatting**: Output ONLY the keywords separated by commas. No numbering, no introduction.
-            6.  **Language**: English.
+            INPUT: "${title}"
             
-            Example Logic:
-            Input: "Film burn transitions"
-            Output: film, burn, transitions, light, leak, effect, overlay, abstract, retro, vintage, cinema, movie, ... (continuing until 40-45 words).
+            INSTRUCTIONS:
+            1.  **Context**: This is for stock video clips (footage, motion graphics).
+            2.  **Source**: First, extract words from the title itself.
+            3.  **Expansion**: Add relevant synonyms related to video (e.g., if title is "explosion", add "effect, vfx, overlay, action").
+            4.  **Quantity**: STRICTLY 40 to 45 keywords.
+            5.  **Format Rules**:
+                - 90% Single words (e.g. "slow", "motion" NOT "slow motion").
+                - Max 10% 2-word phrases.
+                - NO 3-word phrases.
+                - Comma separated.
+                - No numbering, no "Here are keywords".
+            
+            OUTPUT ONLY THE KEYWORDS.
         `;
 
         try {
@@ -235,52 +276,63 @@
                     "Content-Type": "application/json"
                 },
                 body: JSON.stringify({
-                    model: "llama3-8b-8192", // Model cepat dan efisien
+                    model: "llama3-70b-8192", // Menggunakan model 70b untuk akurasi lebih baik
                     messages: [
                         { role: "system", content: systemPrompt },
-                        { role: "user", content: `Title: ${title}` }
+                        { role: "user", content: `Generate keywords for video title: ${title}` }
                     ],
-                    temperature: 0.5, // Temperature rendah agar hasil konsisten dan patuh aturan
+                    temperature: 0.4,
                     max_tokens: 1024
                 })
             });
 
-            if (!response.ok) {
-                throw new Error(`Groq API Error: ${response.statusText}`);
-            }
-
             const data = await response.json();
-            let keywords = data.choices[0].message.content.trim();
-            
-            // Membersihkan hasil jika ada tanda titik di akhir
-            if (keywords.endsWith('.')) {
-                keywords = keywords.slice(0, -1);
+
+            if (!response.ok) {
+                // Tangkap error detail dari Groq
+                const errorMsg = data.error ? data.error.message : response.statusText;
+                throw new Error(errorMsg);
             }
 
-            outputArea.value = keywords;
+            let keywords = data.choices[0].message.content.trim();
+            // Bersihkan titik di akhir jika ada
+            if(keywords.endsWith('.')) keywords = keywords.slice(0, -1);
+
+            // Tampilkan hasil
+            outputEl.value = keywords;
             
-            // Hitung jumlah kata (berdasarkan koma)
-            const count = keywords.split(',').filter(w => w.trim() !== '').length;
-            countInfo.innerText = `Jumlah kata: ${count} (Target: 40-45)`;
+            // Hitung kata untuk info
+            const count = keywords.split(',').length;
+            statusEl.className = 'status-badge status-done';
+            statusEl.innerText = `Sukses (${count} kata)`;
+            
+            // Aktifkan tombol copy
+            btnEl.disabled = false;
 
         } catch (error) {
-            outputArea.value = "Error: " + error.message;
-        } finally {
-            // Restore UI
-            generateBtn.disabled = false;
-            btnText.style.display = 'block';
-            btnSpinner.style.display = 'none';
+            console.error(error);
+            outputEl.value = "Gagal: " + error.message;
+            statusEl.className = 'status-badge status-error';
+            statusEl.innerText = "Error";
         }
     }
 
-    function copyToClipboard() {
-        const copyText = document.getElementById("outputKeywords");
-        if(copyText.value.length < 1) return;
-        
-        copyText.select();
-        copyText.setSelectionRange(0, 99999); /* Untuk mobile */
-        navigator.clipboard.writeText(copyText.value).then(() => {
-            alert("Keywords berhasil disalin!");
+    function copyRow(index) {
+        const textArea = document.getElementById(`out-${index}`);
+        if(textArea.value.length < 1) return;
+
+        textArea.select();
+        textArea.setSelectionRange(0, 99999);
+        navigator.clipboard.writeText(textArea.value).then(() => {
+            // Feedback visual kecil pada tombol
+            const btn = document.getElementById(`btn-${index}`);
+            const originalText = btn.innerText;
+            btn.innerText = "Copied!";
+            btn.style.backgroundColor = "#059669";
+            setTimeout(() => {
+                btn.innerText = originalText;
+                btn.style.backgroundColor = ""; // Reset ke CSS asli
+            }, 1500);
         });
     }
 </script>
