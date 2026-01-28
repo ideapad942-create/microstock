@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Metadata Generator Pro</title>
+    <title>Metadata Generator Pro (No 4K/Image)</title>
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
     <style>
         :root {
@@ -286,7 +286,7 @@
         
         <div class="header">
             <h1>Metadata Generator Pro</h1>
-            <p>Video Stock Automation • Powered by Groq AI</p>
+            <p>Video Stock Automation • Clean Keywords Only</p>
         </div>
 
         <div class="card">
@@ -301,7 +301,7 @@
                 </button>
             </div>
             <div class="api-helper">
-                <i class="fas fa-info-circle"></i> Key akan disimpan lokal di browser Anda.
+                <i class="fas fa-info-circle"></i> Key disimpan lokal di browser (Aman).
                 <a href="https://console.groq.com/keys" target="_blank">Dapatkan API Key di sini &rarr;</a>
             </div>
         </div>
@@ -357,7 +357,7 @@
             localStorage.setItem(STORAGE_KEY, key);
             showSaveFeedback();
         } else {
-            alert("API Key kosong, tidak ada yang disimpan.");
+            alert("API Key kosong!");
         }
     }
 
@@ -365,7 +365,6 @@
         const savedKey = localStorage.getItem(STORAGE_KEY);
         if (savedKey) {
             document.getElementById('apiKey').value = savedKey;
-            // Visual feedback bahwa key terload
             const btn = document.getElementById('saveBtn');
             btn.classList.add('saved');
             btn.innerHTML = '<i class="fas fa-check"></i> Tersimpan';
@@ -401,7 +400,7 @@
 
     // --- LOGIKA UTAMA ---
     async function startGeneration() {
-        // Auto-save key before starting
+        // Auto-save key
         const apiKey = document.getElementById('apiKey').value.trim();
         if(apiKey) localStorage.setItem(STORAGE_KEY, apiKey);
 
@@ -458,24 +457,22 @@
         statusEl.className = 'badge badge-load';
         statusEl.innerHTML = '<i class="fas fa-spinner"></i> Proses AI...';
 
-        // Strict System Prompt
+        // --- SYSTEM PROMPT DIPERBARUI (NO 4K/IMAGE) ---
         const systemPrompt = `
             You are a Microstock Metadata Expert specifically for STOCK VIDEO FOOTAGE.
             
-            TASK: Generate a comma-separated list of keywords based on the input title.
+            TASK: Generate keywords for the user's video title.
+            
+            STRICT NEGATIVE CONSTRAINTS (FORBIDDEN WORDS):
+            - DO NOT use: "4k", "8k", "hd", "uhd", "resolution", "high definition".
+            - DO NOT use: "image", "photo", "picture", "vector", "illustration", "drawing".
+            - DO NOT use: "camera" (unless specific to movement like 'camera move').
             
             CONSTRAINTS:
             1.  **Quantity**: EXACTLY 40-45 keywords.
-            2.  **Format**: Just keywords separated by commas. No numbers, no periods at the end.
-            3.  **Structure**: 
-                - 90% Single words.
-                - Max 10% Two-word phrases.
-                - NO Three-word phrases.
-            4.  **Content Strategy**:
-                - Start with words from title.
-                - Add conceptual synonyms (e.g. "freedom", "success").
-                - Add visual descriptions (e.g. "bright", "colorful").
-                - Add technical video terms (e.g. "footage", "clip", "4k", "hd").
+            2.  **Format**: Comma-separated list only. No numbers.
+            3.  **Phrasing**: 90% Single words, Max 10% 2-word phrases. NO 3-word phrases.
+            4.  **Content**: Focus on visual content, action, emotion, and video specific terms (clip, footage, motion, animation).
         `;
 
         try {
@@ -528,7 +525,6 @@
         
         navigator.clipboard.writeText(textArea.value).then(() => {
             const btn = document.getElementById(`btn-${index}`);
-            const originalHTML = btn.innerHTML;
             
             btn.innerHTML = '<i class="fas fa-check"></i> Copied!';
             btn.style.borderColor = 'var(--success)';
