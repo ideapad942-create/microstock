@@ -3,278 +3,479 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Microstock Video Keyword Tool</title>
+    <title>Metadata Generator Pro</title>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
     <style>
         :root {
-            --primary: #2563eb;
-            --bg: #f8fafc;
-            --card: #ffffff;
-            --text: #1e293b;
-            --border: #e2e8f0;
-            --success: #16a34a;
-            --error: #dc2626;
+            /* Color Palette - Professional Slate & Indigo */
+            --primary: #4f46e5;       /* Indigo 600 */
+            --primary-hover: #4338ca; /* Indigo 700 */
+            --bg-body: #f1f5f9;       /* Slate 100 */
+            --bg-card: #ffffff;
+            --text-main: #0f172a;     /* Slate 900 */
+            --text-muted: #64748b;    /* Slate 500 */
+            --border: #e2e8f0;        /* Slate 200 */
+            --success: #10b981;       /* Emerald 500 */
+            --error: #ef4444;         /* Red 500 */
+            --shadow-sm: 0 1px 2px 0 rgb(0 0 0 / 0.05);
+            --shadow-md: 0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1);
+            --radius: 12px;
         }
+
+        * { box-sizing: border-box; }
 
         body {
-            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
-            background-color: var(--bg);
-            color: var(--text);
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+            background-color: var(--bg-body);
+            color: var(--text-main);
             margin: 0;
-            padding: 20px;
-            display: flex;
-            justify-content: center;
+            padding: 40px 20px;
             min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
         }
 
-        .container {
+        .app-container {
             width: 100%;
             max-width: 1000px;
-            background: var(--card);
-            padding: 30px;
-            border-radius: 12px;
-            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+            display: flex;
+            flex-direction: column;
+            gap: 24px;
         }
 
-        h2 {
-            margin-top: 0;
+        /* HEADER */
+        .header {
             text-align: center;
-            margin-bottom: 20px;
-            color: var(--text);
+            margin-bottom: 10px;
+        }
+        .header h1 {
+            font-size: 1.8rem;
+            font-weight: 800;
+            margin: 0;
+            background: linear-gradient(135deg, #4f46e5, #ec4899);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            letter-spacing: -0.5px;
+        }
+        .header p {
+            color: var(--text-muted);
+            font-size: 0.95rem;
+            margin-top: 8px;
         }
 
-        .form-group {
-            margin-bottom: 20px;
+        /* CARDS */
+        .card {
+            background: var(--bg-card);
+            border-radius: var(--radius);
+            box-shadow: var(--shadow-md);
+            border: 1px solid var(--border);
+            padding: 24px;
         }
 
-        label {
-            display: block;
-            font-weight: 600;
-            margin-bottom: 8px;
-            color: var(--text);
+        .section-title {
+            font-size: 0.9rem;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            color: var(--text-muted);
+            font-weight: 700;
+            margin-bottom: 16px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
         }
 
-        input[type="password"],
-        textarea {
+        /* API KEY SECTION */
+        .api-input-wrapper {
+            position: relative;
+            display: flex;
+            gap: 10px;
+        }
+        
+        .input-group {
+            position: relative;
+            flex-grow: 1;
+        }
+
+        input[type="password"], input[type="text"] {
             width: 100%;
-            padding: 12px;
+            padding: 12px 40px 12px 16px; /* Space for icon */
             border: 1px solid var(--border);
             border-radius: 8px;
-            font-size: 1rem;
-            box-sizing: border-box;
-            font-family: inherit;
+            font-size: 0.95rem;
+            transition: all 0.2s;
+            background: #f8fafc;
+            font-family: monospace;
         }
 
         input:focus, textarea:focus {
             outline: none;
             border-color: var(--primary);
-            box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.1);
+            background: #fff;
+            box-shadow: 0 0 0 3px rgba(79, 70, 229, 0.1);
         }
 
-        button.main-btn {
+        .toggle-password {
+            position: absolute;
+            right: 12px;
+            top: 50%;
+            transform: translateY(-50%);
+            cursor: pointer;
+            color: var(--text-muted);
+        }
+        .toggle-password:hover { color: var(--primary); }
+
+        .btn-save {
+            background-color: white;
+            border: 1px solid var(--border);
+            color: var(--text-main);
+            padding: 0 20px;
+            border-radius: 8px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        .btn-save:hover { background-color: #f1f5f9; border-color: #cbd5e1; }
+        .btn-save.saved { border-color: var(--success); color: var(--success); background: #ecfdf5; }
+
+        .api-helper {
+            font-size: 0.8rem;
+            color: var(--text-muted);
+            margin-top: 8px;
+        }
+        .api-helper a { color: var(--primary); text-decoration: none; font-weight: 500; }
+        .api-helper a:hover { text-decoration: underline; }
+
+        /* INPUT AREA */
+        textarea {
             width: 100%;
-            padding: 12px;
-            background-color: var(--primary);
+            padding: 16px;
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            font-size: 0.95rem;
+            background: #f8fafc;
+            min-height: 120px;
+            resize: vertical;
+            line-height: 1.5;
+            font-family: inherit;
+        }
+
+        /* ACTION BUTTON */
+        .btn-generate {
+            width: 100%;
+            padding: 14px;
+            background: var(--primary);
             color: white;
             border: none;
             border-radius: 8px;
             font-size: 1rem;
             font-weight: 600;
             cursor: pointer;
-            transition: background 0.2s;
+            transition: all 0.2s;
+            box-shadow: 0 4px 6px -1px rgba(79, 70, 229, 0.3);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            gap: 10px;
         }
 
-        button.main-btn:hover { background-color: #1d4ed8; }
-        button.main-btn:disabled { background-color: #94a3b8; cursor: not-allowed; }
+        .btn-generate:hover { background: var(--primary-hover); transform: translateY(-1px); }
+        .btn-generate:active { transform: translateY(0); }
+        .btn-generate:disabled { background: #94a3b8; cursor: not-allowed; transform: none; box-shadow: none; }
 
-        /* TABLE STYLES */
-        .result-table {
+        /* TABLE */
+        .table-container {
+            overflow-x: auto;
+            border-radius: 8px;
+            border: 1px solid var(--border);
+        }
+        
+        table {
             width: 100%;
             border-collapse: collapse;
-            margin-top: 30px;
-            font-size: 0.95rem;
+            font-size: 0.9rem;
+            background: white;
         }
 
-        .result-table th, .result-table td {
-            border: 1px solid var(--border);
-            padding: 12px;
+        th {
+            background: #f8fafc;
+            padding: 16px;
+            text-align: left;
+            font-weight: 600;
+            color: var(--text-muted);
+            border-bottom: 1px solid var(--border);
+        }
+
+        td {
+            padding: 16px;
+            border-bottom: 1px solid var(--border);
             vertical-align: top;
         }
 
-        .result-table th {
-            background-color: #f1f5f9;
-            text-align: left;
-            font-weight: 600;
-        }
+        tr:last-child td { border-bottom: none; }
+        tr:hover td { background-color: #fcfcfc; }
 
-        .col-title { width: 25%; }
-        .col-keywords { width: 60%; }
-        .col-action { width: 15%; text-align: center; }
-
-        textarea.keyword-result {
-            width: 100%;
-            height: 120px;
-            resize: vertical;
-            border: 1px solid #cbd5e1;
-            font-size: 0.9rem;
-            padding: 8px;
-            background-color: #f8fafc;
-        }
-
-        .copy-btn {
-            background-color: var(--success);
-            color: white;
-            border: none;
-            padding: 10px 16px;
-            border-radius: 6px;
-            cursor: pointer;
-            font-size: 0.9rem;
-            margin-top: 5px;
-            width: 100%;
-        }
-        .copy-btn:hover { background-color: #15803d; }
-        .copy-btn:disabled { background-color: #cbd5e1; cursor: not-allowed; }
-
-        .status-badge {
-            display: inline-block;
-            padding: 4px 8px;
-            border-radius: 4px;
-            font-size: 0.8rem;
-            font-weight: bold;
-            margin-top: 5px;
-        }
-        .status-wait { background-color: #f1f5f9; color: #64748b; }
-        .status-loading { background-color: #dbeafe; color: #1e40af; }
-        .status-done { background-color: #dcfce7; color: #166534; }
-        .status-error { background-color: #fee2e2; color: #991b1b; }
-
-        .helper-text { font-size: 0.85rem; color: #64748b; margin-top: 5px; }
-        .helper-text a { color: var(--primary); text-decoration: none; }
+        .title-cell { font-weight: 600; color: var(--text-main); width: 25%; }
         
+        /* Result Textarea in Table */
+        .result-box {
+            width: 100%;
+            height: 100px;
+            font-size: 0.85rem;
+            padding: 10px;
+            border: 1px solid var(--border);
+            border-radius: 6px;
+            background: #f8fafc;
+            color: var(--text-main);
+        }
+        .result-box:focus { background: #fff; }
+
+        /* Status Badges */
+        .badge {
+            display: inline-flex;
+            align-items: center;
+            padding: 4px 10px;
+            border-radius: 99px;
+            font-size: 0.75rem;
+            font-weight: 600;
+            margin-top: 8px;
+        }
+        .badge-wait { background: #f1f5f9; color: #64748b; }
+        .badge-load { background: #e0e7ff; color: #4338ca; }
+        .badge-done { background: #d1fae5; color: #047857; }
+        .badge-err { background: #fee2e2; color: #b91c1c; }
+
+        /* Icon Spin */
+        .fa-spinner { animation: spin 1s linear infinite; }
+        @keyframes spin { 100% { transform: rotate(360deg); } }
+
+        /* Copy Button */
+        .btn-copy {
+            background: white;
+            border: 1px solid var(--border);
+            color: var(--text-main);
+            padding: 8px 12px;
+            border-radius: 6px;
+            font-size: 0.85rem;
+            font-weight: 500;
+            cursor: pointer;
+            width: 100%;
+            transition: all 0.2s;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 6px;
+        }
+        .btn-copy:hover:not(:disabled) { border-color: var(--primary); color: var(--primary); background: #eff6ff; }
+        .btn-copy:disabled { opacity: 0.5; cursor: not-allowed; }
+
         .footer {
             margin-top: 40px;
-            text-align: center;
             font-size: 0.8rem;
-            color: #94a3b8;
-            border-top: 1px dashed var(--border);
-            padding-top: 10px;
+            color: var(--text-muted);
+            text-align: center;
         }
     </style>
 </head>
 <body>
 
-<div class="container">
-    <h2>Microstock Video Keyword Generator</h2>
-
-    <div class="form-group">
-        <label>Groq API Key</label>
-        <input type="password" id="apiKey" placeholder="Masukkan gsk_...">
-        <div class="helper-text">
-            Belum punya API Key? <a href="https://console.groq.com/keys" target="_blank">Generate disini</a>
+    <div class="app-container">
+        
+        <div class="header">
+            <h1>Metadata Generator Pro</h1>
+            <p>Video Stock Automation • Powered by Groq AI</p>
         </div>
+
+        <div class="card">
+            <div class="section-title"><i class="fas fa-key"></i> Konfigurasi API</div>
+            <div class="api-input-wrapper">
+                <div class="input-group">
+                    <input type="password" id="apiKey" placeholder="Masukkan Groq API Key (gsk_...)">
+                    <i class="fas fa-eye toggle-password" id="togglePassword" onclick="toggleVisibility()"></i>
+                </div>
+                <button class="btn-save" id="saveBtn" onclick="saveApiKey()">
+                    <i class="fas fa-save"></i> Save Key
+                </button>
+            </div>
+            <div class="api-helper">
+                <i class="fas fa-info-circle"></i> Key akan disimpan lokal di browser Anda.
+                <a href="https://console.groq.com/keys" target="_blank">Dapatkan API Key di sini &rarr;</a>
+            </div>
+        </div>
+
+        <div class="card">
+            <div class="section-title"><i class="fas fa-list"></i> Input Judul Video</div>
+            <textarea id="titleInput" placeholder="Masukkan judul video di sini...&#10;Tekan Enter untuk judul baru (Satu baris = Satu aset).&#10;&#10;Contoh:&#10;Cinematic drone shot of bali beach&#10;Slow motion fire particles overlay"></textarea>
+            
+            <div style="margin-top: 20px;">
+                <button class="btn-generate" id="generateBtn" onclick="startGeneration()">
+                    <i class="fas fa-bolt"></i> Generate Keywords
+                </button>
+            </div>
+        </div>
+
+        <div class="card" id="resultCard" style="display:none;">
+            <div class="section-title"><i class="fas fa-table"></i> Hasil Generator</div>
+            <div class="table-container">
+                <table id="resultTable">
+                    <thead>
+                        <tr>
+                            <th class="title-cell">Judul Video</th>
+                            <th>Keywords (40-45 Kata)</th>
+                            <th style="width: 120px; text-align: center;">Aksi</th>
+                        </tr>
+                    </thead>
+                    <tbody id="tableBody">
+                        </tbody>
+                </table>
+            </div>
+        </div>
+
+        <div class="footer">
+            Licence : @bangjeeyy
+        </div>
+
     </div>
-
-    <div class="form-group">
-        <label>List Judul Video (Pisahkan dengan Enter/Baris Baru)</label>
-        <textarea id="titleInput" rows="6" placeholder="Contoh input:&#10;Film burn overlay&#10;Lens flare transition&#10;Cinematic bokeh background"></textarea>
-        <div class="helper-text">Masukkan satu judul per baris. Jangan gunakan koma untuk memisahkan judul.</div>
-    </div>
-
-    <button class="main-btn" id="generateBtn" onclick="startGeneration()">Generate Keywords</button>
-
-    <table class="result-table" id="resultTable" style="display:none;">
-        <thead>
-            <tr>
-                <th class="col-title">Judul Video</th>
-                <th class="col-keywords">Generated Keywords</th>
-                <th class="col-action">Aksi</th>
-            </tr>
-        </thead>
-        <tbody id="tableBody">
-            </tbody>
-    </table>
-
-    <div class="footer">
-        Licence : @bangjeeyy
-    </div>
-</div>
 
 <script>
-    // Konfigurasi Model terbaru
+    // --- KONFIGURASI ---
     const GROQ_MODEL = "llama-3.3-70b-versatile"; 
+    const STORAGE_KEY = "user_groq_api_key";
 
+    // --- ON LOAD ---
+    document.addEventListener("DOMContentLoaded", () => {
+        loadApiKey();
+    });
+
+    // --- FITUR API KEY ---
+    function saveApiKey() {
+        const key = document.getElementById('apiKey').value.trim();
+        if (key) {
+            localStorage.setItem(STORAGE_KEY, key);
+            showSaveFeedback();
+        } else {
+            alert("API Key kosong, tidak ada yang disimpan.");
+        }
+    }
+
+    function loadApiKey() {
+        const savedKey = localStorage.getItem(STORAGE_KEY);
+        if (savedKey) {
+            document.getElementById('apiKey').value = savedKey;
+            // Visual feedback bahwa key terload
+            const btn = document.getElementById('saveBtn');
+            btn.classList.add('saved');
+            btn.innerHTML = '<i class="fas fa-check"></i> Tersimpan';
+        }
+    }
+
+    function showSaveFeedback() {
+        const btn = document.getElementById('saveBtn');
+        const originalText = btn.innerHTML;
+        
+        btn.classList.add('saved');
+        btn.innerHTML = '<i class="fas fa-check"></i> Saved!';
+        
+        setTimeout(() => {
+            btn.classList.remove('saved');
+            btn.innerHTML = '<i class="fas fa-save"></i> Save Key';
+        }, 2000);
+    }
+
+    function toggleVisibility() {
+        const input = document.getElementById('apiKey');
+        const icon = document.getElementById('togglePassword');
+        if (input.type === "password") {
+            input.type = "text";
+            icon.classList.remove('fa-eye');
+            icon.classList.add('fa-eye-slash');
+        } else {
+            input.type = "password";
+            icon.classList.remove('fa-eye-slash');
+            icon.classList.add('fa-eye');
+        }
+    }
+
+    // --- LOGIKA UTAMA ---
     async function startGeneration() {
+        // Auto-save key before starting
         const apiKey = document.getElementById('apiKey').value.trim();
+        if(apiKey) localStorage.setItem(STORAGE_KEY, apiKey);
+
         const rawTitles = document.getElementById('titleInput').value.trim();
         
-        if (!apiKey) { alert("Harap masukkan API Key!"); return; }
-        if (!rawTitles) { alert("Harap masukkan minimal satu judul!"); return; }
+        if (!apiKey) { alert("API Key wajib diisi!"); return; }
+        if (!rawTitles) { alert("Masukkan minimal satu judul video!"); return; }
 
-        // Pisahkan judul berdasarkan Enter
         const titles = rawTitles.split('\n').filter(t => t.trim() !== '');
 
-        // Tampilkan tabel
-        const table = document.getElementById('resultTable');
+        // UI Prep
+        document.getElementById('resultCard').style.display = 'block';
         const tbody = document.getElementById('tableBody');
-        table.style.display = 'table';
         tbody.innerHTML = ''; 
 
-        // Buat baris tabel (Initial State)
+        // Create Rows
         titles.forEach((title, index) => {
-            const row = document.createElement('tr');
-            row.id = `row-${index}`;
-            row.innerHTML = `
+            const tr = document.createElement('tr');
+            tr.innerHTML = `
                 <td>
-                    <strong>${title}</strong><br>
-                    <span class="status-badge status-wait" id="status-${index}">Menunggu Antrian...</span>
+                    <div style="font-weight:600; margin-bottom:4px;">${title}</div>
+                    <div class="badge badge-wait" id="status-${index}"><i class="fas fa-clock" style="margin-right:4px"></i> Menunggu</div>
                 </td>
                 <td>
-                    <textarea id="out-${index}" class="keyword-result" readonly placeholder="Hasil akan muncul di sini..."></textarea>
+                    <textarea id="out-${index}" class="result-box" readonly></textarea>
                 </td>
                 <td>
-                    <button class="copy-btn" onclick="copyRow('${index}')" disabled id="btn-${index}">Copy</button>
+                    <button class="btn-copy" id="btn-${index}" onclick="copyRow('${index}')" disabled>
+                        <i class="fas fa-copy"></i> Copy
+                    </button>
                 </td>
             `;
-            tbody.appendChild(row);
+            tbody.appendChild(tr);
         });
 
         const generateBtn = document.getElementById('generateBtn');
         generateBtn.disabled = true;
-        generateBtn.innerText = "Sedang Memproses...";
+        generateBtn.innerHTML = '<i class="fas fa-spinner"></i> Sedang Memproses...';
 
-        // Proses satu per satu (Sequential) untuk menghindari Rate Limit
+        // Process Loop
         for (let i = 0; i < titles.length; i++) {
-            await processSingleTitle(apiKey, titles[i], i);
+            await processItem(apiKey, titles[i], i);
         }
 
         generateBtn.disabled = false;
-        generateBtn.innerText = "Generate Keywords";
+        generateBtn.innerHTML = '<i class="fas fa-bolt"></i> Generate Keywords';
     }
 
-    async function processSingleTitle(apiKey, title, index) {
+    async function processItem(apiKey, title, index) {
         const statusEl = document.getElementById(`status-${index}`);
         const outputEl = document.getElementById(`out-${index}`);
         const btnEl = document.getElementById(`btn-${index}`);
 
-        statusEl.className = 'status-badge status-loading';
-        statusEl.innerText = "Sedang generate...";
+        statusEl.className = 'badge badge-load';
+        statusEl.innerHTML = '<i class="fas fa-spinner"></i> Proses AI...';
 
-        // System Prompt yang disesuaikan
+        // Strict System Prompt
         const systemPrompt = `
-            You are a Microstock Keyword Assistant for VIDEO FOOTAGE.
+            You are a Microstock Metadata Expert specifically for STOCK VIDEO FOOTAGE.
             
-            TASK: Generate keywords for the user's video title.
+            TASK: Generate a comma-separated list of keywords based on the input title.
             
-            RULES:
-            1.  **Output Quantity**: STRICTLY between 40 and 45 keywords.
-            2.  **Formatting**: Comma-separated list only. No numbers.
-            3.  **Phrasing**: 
-                - 90% must be SINGLE words (e.g. "film", "grain", "effect").
-                - Max 10% can be 2-word phrases.
-                - NO 3-word phrases allowed.
-            4.  **Content**: Start with words from the title, then add synonyms, concepts, and technical terms relevant to stock video (e.g. footage, clip, motion).
-            
-            Example Logic for "Film Burn":
-            film, burn, light, leak, overlay, effect, transition, vintage, retro, cinema, old, movie, frame, abstract, flash, glare, bright, texture, noise, dust, scratch, ... (until 40-45 words)
+            CONSTRAINTS:
+            1.  **Quantity**: EXACTLY 40-45 keywords.
+            2.  **Format**: Just keywords separated by commas. No numbers, no periods at the end.
+            3.  **Structure**: 
+                - 90% Single words.
+                - Max 10% Two-word phrases.
+                - NO Three-word phrases.
+            4.  **Content Strategy**:
+                - Start with words from title.
+                - Add conceptual synonyms (e.g. "freedom", "success").
+                - Add visual descriptions (e.g. "bright", "colorful").
+                - Add technical video terms (e.g. "footage", "clip", "4k", "hd").
         `;
 
         try {
@@ -285,42 +486,36 @@
                     "Content-Type": "application/json"
                 },
                 body: JSON.stringify({
-                    model: GROQ_MODEL, 
+                    model: GROQ_MODEL,
                     messages: [
                         { role: "system", content: systemPrompt },
-                        { role: "user", content: `Title: ${title}` }
+                        { role: "user", content: `Video Title: ${title}` }
                     ],
-                    temperature: 0.4, // Rendah agar patuh aturan
+                    temperature: 0.3, 
                     max_tokens: 1024
                 })
             });
 
             const data = await response.json();
 
-            if (!response.ok) {
-                // Menangkap pesan error spesifik dari API
-                const msg = data.error ? data.error.message : "Unknown error";
-                throw new Error(msg);
-            }
+            if (!response.ok) throw new Error(data.error?.message || response.statusText);
 
             let keywords = data.choices[0].message.content.trim();
-            // Bersihkan format jika AI bandel memberi titik di akhir
             if (keywords.endsWith('.')) keywords = keywords.slice(0, -1);
 
             outputEl.value = keywords;
             
-            // Hitung kata
             const count = keywords.split(',').length;
-            statusEl.className = 'status-badge status-done';
-            statusEl.innerText = `Selesai (${count} kata)`;
+            statusEl.className = 'badge badge-done';
+            statusEl.innerHTML = `<i class="fas fa-check-circle" style="margin-right:4px"></i> Selesai (${count})`;
             
             btnEl.disabled = false;
 
         } catch (error) {
             console.error(error);
             outputEl.value = "Error: " + error.message;
-            statusEl.className = 'status-badge status-error';
-            statusEl.innerText = "Gagal";
+            statusEl.className = 'badge badge-err';
+            statusEl.innerHTML = '<i class="fas fa-exclamation-triangle"></i> Gagal';
         }
     }
 
@@ -330,16 +525,19 @@
 
         textArea.select();
         textArea.setSelectionRange(0, 99999);
+        
         navigator.clipboard.writeText(textArea.value).then(() => {
             const btn = document.getElementById(`btn-${index}`);
-            const originalText = btn.innerText;
+            const originalHTML = btn.innerHTML;
             
-            btn.innerText = "Disalin!";
-            btn.style.backgroundColor = "#059669";
+            btn.innerHTML = '<i class="fas fa-check"></i> Copied!';
+            btn.style.borderColor = 'var(--success)';
+            btn.style.color = 'var(--success)';
+            btn.style.background = '#ecfdf5';
             
             setTimeout(() => {
-                btn.innerText = "Copy";
-                btn.style.backgroundColor = ""; 
+                btn.innerHTML = '<i class="fas fa-copy"></i> Copy';
+                btn.style = ''; // Reset inline styles
             }, 1500);
         });
     }
