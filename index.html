@@ -28,7 +28,7 @@
 
         .container {
             width: 100%;
-            max-width: 900px; /* Diperlebar untuk tabel */
+            max-width: 1000px;
             background: var(--card);
             padding: 30px;
             border-radius: 12px;
@@ -39,6 +39,7 @@
             margin-top: 0;
             text-align: center;
             margin-bottom: 20px;
+            color: var(--text);
         }
 
         .form-group {
@@ -49,6 +50,7 @@
             display: block;
             font-weight: 600;
             margin-bottom: 8px;
+            color: var(--text);
         }
 
         input[type="password"],
@@ -78,10 +80,11 @@
             font-size: 1rem;
             font-weight: 600;
             cursor: pointer;
+            transition: background 0.2s;
         }
 
         button.main-btn:hover { background-color: #1d4ed8; }
-        button.main-btn:disabled { background-color: #94a3b8; cursor: wait; }
+        button.main-btn:disabled { background-color: #94a3b8; cursor: not-allowed; }
 
         /* TABLE STYLES */
         .result-table {
@@ -100,32 +103,36 @@
         .result-table th {
             background-color: #f1f5f9;
             text-align: left;
+            font-weight: 600;
         }
 
-        .col-title { width: 20%; font-weight: bold; }
-        .col-keywords { width: 65%; }
+        .col-title { width: 25%; }
+        .col-keywords { width: 60%; }
         .col-action { width: 15%; text-align: center; }
 
         textarea.keyword-result {
             width: 100%;
-            height: 100px;
+            height: 120px;
             resize: vertical;
             border: 1px solid #cbd5e1;
             font-size: 0.9rem;
             padding: 8px;
+            background-color: #f8fafc;
         }
 
         .copy-btn {
             background-color: var(--success);
             color: white;
             border: none;
-            padding: 8px 12px;
+            padding: 10px 16px;
             border-radius: 6px;
             cursor: pointer;
-            font-size: 0.85rem;
+            font-size: 0.9rem;
             margin-top: 5px;
+            width: 100%;
         }
         .copy-btn:hover { background-color: #15803d; }
+        .copy-btn:disabled { background-color: #cbd5e1; cursor: not-allowed; }
 
         .status-badge {
             display: inline-block;
@@ -133,9 +140,10 @@
             border-radius: 4px;
             font-size: 0.8rem;
             font-weight: bold;
+            margin-top: 5px;
         }
-        .status-wait { background-color: #e2e8f0; color: #475569; }
-        .status-loading { background-color: #bfdbfe; color: #1e40af; }
+        .status-wait { background-color: #f1f5f9; color: #64748b; }
+        .status-loading { background-color: #dbeafe; color: #1e40af; }
         .status-done { background-color: #dcfce7; color: #166534; }
         .status-error { background-color: #fee2e2; color: #991b1b; }
 
@@ -167,8 +175,8 @@
 
     <div class="form-group">
         <label>List Judul Video (Pisahkan dengan Enter/Baris Baru)</label>
-        <textarea id="titleInput" rows="6" placeholder="Film burn overlay&#10;Lens flare transition&#10;Cinematic bokeh background"></textarea>
-        <div class="helper-text">Satu baris = satu judul video.</div>
+        <textarea id="titleInput" rows="6" placeholder="Contoh input:&#10;Film burn overlay&#10;Lens flare transition&#10;Cinematic bokeh background"></textarea>
+        <div class="helper-text">Masukkan satu judul per baris. Jangan gunakan koma untuk memisahkan judul.</div>
     </div>
 
     <button class="main-btn" id="generateBtn" onclick="startGeneration()">Generate Keywords</button>
@@ -191,6 +199,9 @@
 </div>
 
 <script>
+    // Konfigurasi Model terbaru
+    const GROQ_MODEL = "llama-3.3-70b-versatile"; 
+
     async function startGeneration() {
         const apiKey = document.getElementById('apiKey').value.trim();
         const rawTitles = document.getElementById('titleInput').value.trim();
@@ -198,26 +209,26 @@
         if (!apiKey) { alert("Harap masukkan API Key!"); return; }
         if (!rawTitles) { alert("Harap masukkan minimal satu judul!"); return; }
 
-        // Pisahkan judul berdasarkan baris baru (Enter) dan hapus baris kosong
+        // Pisahkan judul berdasarkan Enter
         const titles = rawTitles.split('\n').filter(t => t.trim() !== '');
 
-        // Tampilkan tabel, sembunyikan baris lama
+        // Tampilkan tabel
         const table = document.getElementById('resultTable');
         const tbody = document.getElementById('tableBody');
         table.style.display = 'table';
-        tbody.innerHTML = ''; // Reset tabel
+        tbody.innerHTML = ''; 
 
-        // Buat baris kosong dulu (Status: Waiting)
+        // Buat baris tabel (Initial State)
         titles.forEach((title, index) => {
             const row = document.createElement('tr');
             row.id = `row-${index}`;
             row.innerHTML = `
                 <td>
                     <strong>${title}</strong><br>
-                    <span class="status-badge status-wait" id="status-${index}">Menunggu...</span>
+                    <span class="status-badge status-wait" id="status-${index}">Menunggu Antrian...</span>
                 </td>
                 <td>
-                    <textarea id="out-${index}" class="keyword-result" readonly></textarea>
+                    <textarea id="out-${index}" class="keyword-result" readonly placeholder="Hasil akan muncul di sini..."></textarea>
                 </td>
                 <td>
                     <button class="copy-btn" onclick="copyRow('${index}')" disabled id="btn-${index}">Copy</button>
@@ -230,7 +241,7 @@
         generateBtn.disabled = true;
         generateBtn.innerText = "Sedang Memproses...";
 
-        // PROSES LOOPING SATU PER SATU (Untuk menghindari error API rate limit)
+        // Proses satu per satu (Sequential) untuk menghindari Rate Limit
         for (let i = 0; i < titles.length; i++) {
             await processSingleTitle(apiKey, titles[i], i);
         }
@@ -245,27 +256,25 @@
         const btnEl = document.getElementById(`btn-${index}`);
 
         statusEl.className = 'status-badge status-loading';
-        statusEl.innerText = "Memproses...";
+        statusEl.innerText = "Sedang generate...";
 
-        // SYSTEM PROMPT KHUSUS VIDEO
+        // System Prompt yang disesuaikan
         const systemPrompt = `
-            You are a Microstock Metadata Expert for VIDEO FOOTAGE.
+            You are a Microstock Keyword Assistant for VIDEO FOOTAGE.
             
-            INPUT: "${title}"
+            TASK: Generate keywords for the user's video title.
             
-            INSTRUCTIONS:
-            1.  **Context**: This is for stock video clips (footage, motion graphics).
-            2.  **Source**: First, extract words from the title itself.
-            3.  **Expansion**: Add relevant synonyms related to video (e.g., if title is "explosion", add "effect, vfx, overlay, action").
-            4.  **Quantity**: STRICTLY 40 to 45 keywords.
-            5.  **Format Rules**:
-                - 90% Single words (e.g. "slow", "motion" NOT "slow motion").
-                - Max 10% 2-word phrases.
-                - NO 3-word phrases.
-                - Comma separated.
-                - No numbering, no "Here are keywords".
+            RULES:
+            1.  **Output Quantity**: STRICTLY between 40 and 45 keywords.
+            2.  **Formatting**: Comma-separated list only. No numbers.
+            3.  **Phrasing**: 
+                - 90% must be SINGLE words (e.g. "film", "grain", "effect").
+                - Max 10% can be 2-word phrases.
+                - NO 3-word phrases allowed.
+            4.  **Content**: Start with words from the title, then add synonyms, concepts, and technical terms relevant to stock video (e.g. footage, clip, motion).
             
-            OUTPUT ONLY THE KEYWORDS.
+            Example Logic for "Film Burn":
+            film, burn, light, leak, overlay, effect, transition, vintage, retro, cinema, old, movie, frame, abstract, flash, glare, bright, texture, noise, dust, scratch, ... (until 40-45 words)
         `;
 
         try {
@@ -276,12 +285,12 @@
                     "Content-Type": "application/json"
                 },
                 body: JSON.stringify({
-                    model: "llama3-70b-8192", // Menggunakan model 70b untuk akurasi lebih baik
+                    model: GROQ_MODEL, 
                     messages: [
                         { role: "system", content: systemPrompt },
-                        { role: "user", content: `Generate keywords for video title: ${title}` }
+                        { role: "user", content: `Title: ${title}` }
                     ],
-                    temperature: 0.4,
+                    temperature: 0.4, // Rendah agar patuh aturan
                     max_tokens: 1024
                 })
             });
@@ -289,31 +298,29 @@
             const data = await response.json();
 
             if (!response.ok) {
-                // Tangkap error detail dari Groq
-                const errorMsg = data.error ? data.error.message : response.statusText;
-                throw new Error(errorMsg);
+                // Menangkap pesan error spesifik dari API
+                const msg = data.error ? data.error.message : "Unknown error";
+                throw new Error(msg);
             }
 
             let keywords = data.choices[0].message.content.trim();
-            // Bersihkan titik di akhir jika ada
-            if(keywords.endsWith('.')) keywords = keywords.slice(0, -1);
+            // Bersihkan format jika AI bandel memberi titik di akhir
+            if (keywords.endsWith('.')) keywords = keywords.slice(0, -1);
 
-            // Tampilkan hasil
             outputEl.value = keywords;
             
-            // Hitung kata untuk info
+            // Hitung kata
             const count = keywords.split(',').length;
             statusEl.className = 'status-badge status-done';
-            statusEl.innerText = `Sukses (${count} kata)`;
+            statusEl.innerText = `Selesai (${count} kata)`;
             
-            // Aktifkan tombol copy
             btnEl.disabled = false;
 
         } catch (error) {
             console.error(error);
-            outputEl.value = "Gagal: " + error.message;
+            outputEl.value = "Error: " + error.message;
             statusEl.className = 'status-badge status-error';
-            statusEl.innerText = "Error";
+            statusEl.innerText = "Gagal";
         }
     }
 
@@ -324,14 +331,15 @@
         textArea.select();
         textArea.setSelectionRange(0, 99999);
         navigator.clipboard.writeText(textArea.value).then(() => {
-            // Feedback visual kecil pada tombol
             const btn = document.getElementById(`btn-${index}`);
             const originalText = btn.innerText;
-            btn.innerText = "Copied!";
+            
+            btn.innerText = "Disalin!";
             btn.style.backgroundColor = "#059669";
+            
             setTimeout(() => {
-                btn.innerText = originalText;
-                btn.style.backgroundColor = ""; // Reset ke CSS asli
+                btn.innerText = "Copy";
+                btn.style.backgroundColor = ""; 
             }, 1500);
         });
     }
