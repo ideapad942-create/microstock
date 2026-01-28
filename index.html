@@ -169,7 +169,7 @@
     <div class="app-container">
         
         <div class="header">
-            <h1>Metadata Generator Pro</h1>
+            <h1>Metadata Generator Keyword Only</h1>
             <p>Video Stock Automation • CSV Export Ready</p>
         </div>
 
@@ -191,7 +191,7 @@
 
         <div class="card">
             <div class="section-title"><i class="fas fa-list"></i> Input Judul Video</div>
-            <textarea id="titleInput" placeholder="Masukkan judul video (Satu baris = Satu aset)...&#10;&#10;Contoh:&#10;Aerial drone shot of tropical beach&#10;Cyberpunk city rain street night"></textarea>
+            <textarea id="titleInput" placeholder="Masukkan judul video (Jika banyak judul gunakan enter, Untuk Pisah)...&#10;&#10;Contoh:&#10;Aerial drone shot of tropical beach&#10;Cyberpunk city rain street night"></textarea>
             
             <div class="action-row">
                 <button class="btn-primary" id="generateBtn" onclick="startGeneration()">
@@ -204,7 +204,7 @@
         </div>
 
         <div class="card" id="resultCard" style="display:none;">
-            <div class="section-title"><i class="fas fa-table"></i> Hasil (Target: 40-45 Kata)</div>
+            <div class="section-title"><i class="fas fa-table"></i> Hasil (Target keyword: 40-45 Kata)</div>
             <div class="table-container">
                 <table id="resultTable">
                     <thead>
